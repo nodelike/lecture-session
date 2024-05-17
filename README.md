@@ -4,4 +4,6 @@ This repo contains the content used for lecture session conducted by [me](https:
 
 ## Prerequisites
 - Install `Node Notebook (REPL)` extension for `VS CODE`
+
+Open `lecture.nnb` using `Node Notebook`
 ---
