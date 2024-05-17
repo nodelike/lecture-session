@@ -1,0 +1,388 @@
+{
+    "cells": [
+        {
+            "language": "markdown",
+            "source": [
+                "# Callbacks, Problems with Callbacks & Introduction to Promises\n---\n\n**Today's objective:**\n- Callbacks\n- Sync & Async stack\n- Problems with callbacks\n    - Callback hell\n    - Inversion of control\n- Promises\n- Real-world example of promises\n\n## Callbacks\n\n`Higher Order Function`: Higher order functions are the function that takes in another function as its ***parameter***.\n\n`Callback function`: Callback functions are the function that is passed as an ***argument*** to a higher-order function."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "function higherOrderFunction(callback){\n    callback();\n    console.log(\"HigherOrderFunction executed!\")\n    return\n}\n\nfunction dummyCallback(){\n    console.log(\"I am a callback!\")\n}\nhigherOrderFunction(dummyCallback);"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "I am a callback!",
+                                "HigherOrderFunction executed!",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "Before we understand why we need callbacks, we need to understand types function/executions and how does it work.\n\n**Synchronous function**: Synchronous functions are executed line by line and waits for the statement to be exectued completely (no matter how much time it takes).\n\nThese statements are stored in the synchronous stack.\n\n**Asynchronous function**: Asynchronous functions executes immediately (even if it takes time to execute) and moves on to next statement and doesn't block the program flow.\n\nThese statements are stored in the asynchornous stack.\n\n### Order of execution of sync stack and async stack\n\nSince JS is single threaded language, we can't process many process at same time, hence we handle it using async event handling.\n\nWhen the program is run, all the synchronous functions are moved to sync stack and all the async functions are moved to async stack."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "<img src=\"sync-async.webp\"><img>"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "**Sync stack execution:** Each process in stack will get `executed sequentially` and then only it moves out of the stack. Doesn't matter how much time it takes."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "// sync execution example\nfor(let i = 0; i < 4000000000; i++){\n    continue;\n}\n\nconsole.log(\"loop finished\")"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "loop finished",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "**Async stack execution:** Each process in stack will `executed simultaneously` and the first process that gets finished will move out of the stack."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "function callTimeouts(){\n    setTimeout(() => {\n        console.log(\"executed after 4s\")\n    }, 4000)\n    \n    setTimeout(() => {\n        console.log(\"executed after 3s\")\n    }, 3000)\n    \n    setTimeout(() => {\n        console.log(\"executed after 5s\")\n    }, 5000)\n    \n    setTimeout(() => {\n        console.log(\"executed after 1s\")\n    }, 1000)\n}\n\ncallTimeouts();"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "executed after 1s",
+                                "executed after 3s",
+                                "executed after 4s",
+                                "executed after 5s",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "### Why callbacks?\n\nWe need callbacks to handle asynchronous functions as asynchronous functions don't block the flow of execution."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "//async execution example\nfunction fetchData() {\n    let data;\n    setTimeout(() => {\n      data = { id: 1, name: 'John' };\n    }, 2000);\n    return data;\n}\n  \n  const result = fetchData();\n  console.log(result); // Output: undefined"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "undefined",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "The above code runs instantly and `data` is undefined as the async operation changes the `data` later and before the `data` is returned.\n\nThis is why need callbacks that passes the `data` to the  callback function. See below for example:"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "function fetchData(callback){\n    let data = null;\n\n    setTimeout(() => {\n        data = { id: 1, name: 'John' };\n        callback(data);\n    }, 2000); // data changes from 'null' to Object after 2sec    \n}\n\n\nfetchData((data) => {\n    console.log(data);\n})\n"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "{ id: 1, name: 'John' }",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "### Problems with Callbacks:\n\n- Callback Hell\n- Handles async functions poorly.\n- Inversion of Control"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "**Callback Hell:**\n\nCallback Hell happens when there is a lot of nested callbacks and it becomes harder to manage code bugs and also decreases the readability of the code."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "function doSomething(callback){\n    setTimeout(() => {\n        callback();\n    },500)\n}\n\ndoSomething(() => {\n    console.log(\"doing something level 1\")\n    doSomething(() => {\n        console.log(\"doing something level 2\")\n        doSomething(() => {\n            console.log(\"doing something level 3\")\n            doSomething(() => {\n                console.log(\"doing something level 4\")\n                doSomething(() => {\n                    console.log(\"doing something level 5\")\n                    doSomething(() => {\n                        console.log(\"doing something level 6\")\n                        doSomething(() => {\n                            console.log(\"doing something level 7\")\n                            doSomething(() => {\n                                console.log(\"doing something level 8\")\n                                doSomething(() => {\n                                    console.log(\"doing something level 9\")\n                                    doSomething(() => {\n                                        console.log(\"doing something level 10\")\n                                    })\n                                })\n                            })\n                        })\n                    })\n                })\n            })\n        })\n    })\n})"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "doing something level 1",
+                                "doing something level 2",
+                                "doing something level 3",
+                                "doing something level 4",
+                                "doing something level 5",
+                                "doing something level 6",
+                                "doing something level 7",
+                                "doing something level 8",
+                                "doing something level 9",
+                                "doing something level 10",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "**Inversion of Control:**\n\nAnother issue with callbacks is `inversion of control`. When you write a callback, you're assuming that the program you're giving the callback to is responsible and will call it when (and only when) it's supposed to. You're essentially inverting the control of your program over to another program"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "function criticalFunction() {\n    // It's critical that this function\n    // gets called and with the correct\n    // arguments.\n    return\n}\n  \nthirdPartyLib(criticalFunction);"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "Since you are not the one calling the function, you have `0 control` of your critical function. You are trusting the third-party lib to be error-free and executes the critical function and at the correct time."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "## Promises\n\n### What is a promise ?\n`Promise` is an object which returns a single value some time in 'future'.\n\nIt is used to handle asynchronous operations which are difficult using callbacks.\n\n**Promise states:**\n\n- `Pending`  : Default State\n\n- `Fulfilled` : A State where the desired result is obtained\n\n- `Rejected` : A State where there is any error or the unexpected outcome\n\n"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "let customPromise = new Promise((resolve, reject) => {\n     //perform operations\n     try {\n        //Operation performed without any error\n        //resolve(\"Resolved successfully\");\n        throw \"Error\"\n    } catch (error) {\n        reject(error);\n    }\n});\n\ncustomPromise.then((resolvedData) => {\n    console.log(resolvedData);\n}, (rejectedData) => {\n    console.log(rejectedData);\n});"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "Error",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "### Promises and Chaining Promises"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "function delay(time) {\n    return new Promise((resolve) => {\n        setTimeout(() => {\n            resolve(`Waited for ${time} ms`);\n        }, time);\n    });\n}\n\n// Start chaining promises\ndelay(1000) // Wait for 1 second\n    .then((result) => {\n        console.log(result); // Logs \"Waited for 1000 ms\"\n        return delay(2000); // Wait for 2 more seconds\n    })\n    .then((result) => {\n        console.log(result); // Logs \"Waited for 2000 ms\"\n        return delay(3000); // Wait for 3 more seconds\n    })\n    .then((result) => {\n        console.log(result); // Logs \"Waited for 3000 ms\"\n    })\n"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "Waited for 1000 ms",
+                                "Waited for 2000 ms",
+                                "Waited for 3000 ms",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "**Handling error in Promises:**"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "function delay(time) {\n    return new Promise((resolve) => {\n        setTimeout(() => {\n            resolve(`Waited for ${time} ms`);\n        }, time);\n    });\n}\n\n// Error handling using catch block\n\ndelay(1000) // Wait for 1 second\n    .then((result) => {\n        console.log(result); // Logs \"Waited for 1000 ms\"\n        return delay(2000); // Wait for 2 more seconds\n    })\n    .then((result) => {\n        console.log(result); // Logs \"Waited for 2000 ms\"\n        throw \"Error in level 2\";\n    })\n    .then((result) => {\n        console.log(result); // Logs \"Waited for 3000 ms\"\n    })\n    .catch((error) => {\n        console.error(\"Error:\", error); // Logs any error that occurs during the promise chain\n    })\n    .finally(() => {\n        console.log(\"All done!\"); // Executes regardless of the outcome\n    });\n"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "Waited for 1000 ms",
+                                "Waited for 2000 ms",
+                                ""
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stderr",
+                            "value": [
+                                "Error: Error in level 2",
+                                ""
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "All done!",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "<span style=\"font-family: monospace; font-size:12px; line-height:1px;\">Waited for 1000 ms<br>\nWaited for 2000 ms<br>\nError: Error in level 2<br>\nAll done!</span>"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "## Real-World Example: E-Commerce (Placing order)\n\nLet's say there's an ecommerce website and the user wants to buy some items:\n\nThere correct order/control of program should be:\n\n- `placeOrder`: Confirming the order.\n\n- `doPayment`: Process the payment correctly from third-party payment processor (`stripe`).\n\n- `initiateDelivery`: Initiate delivery if payment is processed correctly."
+            ],
+            "outputs": []
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "The code below does not use `promises` and we see how async operations are handled incorrectly and order of execution is wrong.\n\n**Problematic code:**"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "const stripePayment = require(\"./promises/stripe.js\")\n\nfunction placeOrder(items, paymentCallback){\n    if(items.length != 0){\n        console.log(\"1. Buying the items, proceeding to payment\")\n        paymentCallback();\n    }\n    return;\n}\n\nfunction initiateDelivery(){\n    //sync func\n    console.log(\"3. Delivery initiated\");\n}\n\n\nlet items = [\"Mobile\", \"Charger\", \"Screen Guard\"]\n\nplaceOrder(items, () => {\n    stripePayment();\n    initiateDelivery();\n});"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "1. Buying the items, proceeding to payment",
+                                "3. Delivery initiated",
+                                "2. Payment processed!",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "language": "markdown",
+            "source": [
+                "The code below use `promises` and we see how async operations are handled correctly and the order of execution is correct.\n\n**Solution (PROMISES):**"
+            ],
+            "outputs": []
+        },
+        {
+            "language": "javascript",
+            "source": [
+                "let stripePayment = require(\"./promises/solution/stripe.js\");\n\n// Solution with Promises\nlet items = [\"Mobile\", \"Charger\", \"Screen Guard\"]\n\nfunction placeOrder(items) {\n  return new Promise((resolve) => {\n    if(items.length != 0){\n        // resolve();\n        console.log(\"1. Buying the items, proceeding to payment\")\n    }\n  });\n}\n\n\nfunction initiateDelivery() {\n    console.log(\"3. Deliery Initiated\");\n}\n\nplaceOrder(items)\n  .then(stripePayment)\n  .then(initiateDelivery);\n"
+            ],
+            "outputs": [
+                {
+                    "items": [
+                        {
+                            "mime": "application/vnd.code.notebook.stdout",
+                            "value": [
+                                "1. Buying the items, proceeding to payment",
+                                "2. Payment processed!",
+                                "3. Deliery Initiated",
+                                ""
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
